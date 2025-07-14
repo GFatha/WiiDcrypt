@@ -52,7 +52,6 @@ def select_and_validate_folder():
             messagebox.showinfo("Cancelled", "Operation cancelled — no folder was selected.")
             return None
         if is_valid_cdn_folder(selected):
-            messagebox.showinfo("Folder Validated ✅", f"Valid Wii U CDN folder selected:\n{selected}")
             return selected
         else:
             attempt_count += 1
@@ -71,7 +70,3 @@ def select_and_validate_folder():
                     "It appears you're having trouble selecting a valid folder.\nPlease try again later."
                 )
                 return None
-
-# Run standalone for testing
-if __name__ == "__main__":
-    select_and_validate_folder()
