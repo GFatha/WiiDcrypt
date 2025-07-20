@@ -12,6 +12,7 @@ def handle_tmd_logic(selected_path):
     if tmd_result in ("skip", "not_found"):
         fb_result = fallback_tmd_logic(selected_path)
         print("fallback_tmd_logic result:", fb_result)
+    return
 
 def check_for_title_tmd(cdn_folder):
     tmd_path = os.path.join(cdn_folder, "title.tmd")
@@ -26,12 +27,24 @@ def check_for_title_tmd(cdn_folder):
         if response:
             return
         else:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = os.path.join(cdn_folder, f"title.tmd.bak_{timestamp}")
-            os.rename(tmd_path, backup_path)
+            backup_tmd_file("r", cdn_folder, tmd_path)
             return "skip"
     else:
         return "not_found"
+
+def backup_tmd_file(type, cdn_folder, tmd_path):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = os.path.basename(tmd_path)
+    backup_name = f"{filename}.bak_{timestamp}"
+    backup_path = os.path.join(cdn_folder, backup_name)
+
+    os.makedirs(os.path.dirname(backup_path), exist_ok=True)
+    if type == "c":
+        shutil.copy2(tmd_path, backup_path)
+    elif type == "r":
+        os.rename(tmd_path, backup_path)
+
+    return backup_path
 
 def get_tmd_alternates(cdn_folder):
     return [f for f in os.listdir(cdn_folder) if re.fullmatch(r'tmd\.\d+', f)]
@@ -68,6 +81,9 @@ def prompt_choose_tmd_file(cdn_folder, options):
         if sel:
             selected_value = options[sel[0]]
             root.destroy()
+
+
+            backup_tmd_file("c", cdn_folder, os.path.join(cdn_folder, selected_value))
             rename_tmd_file(cdn_folder, selected_value)
 
         else:
@@ -115,28 +131,4 @@ def fallback_tmd_logic(cdn_folder):
             print(f"[ERROR] Failed to rename {src} to {title_tmd_path}: {e}")
             return "error"
 
-    elif has_title:
-        root = tk.Tk()
-        root.withdraw()
-        response = messagebox.askyesno("Fallback to title.tmd",
-            "No alternate tmd.X files were found.\n"
-            "If the existing title.tmd is not used, decryption is not possible.\n"
-            "Do you want to use the existing title.tmd?")
-        root.destroy()
-
-        if response:
-            return "fallback"
-        else:
-            messagebox.showinfo("Cancelled",
-                "Operation cancelled — no usable title.tmd available.\n"
-                "Decryption cannot proceed.")
-            return "cancelled"
-    else:
-        root = tk.Tk()
-        root.withdraw()
-        messagebox.showerror("Fatal Error",
-            "No valid title.tmd is available.\n"
-            "Neither an original title.tmd nor alternate tmd.X file was found.\n"
-            "Operation cancelled — decryption cannot continue.")
-        root.destroy()
-        return "cancelled"
+    
