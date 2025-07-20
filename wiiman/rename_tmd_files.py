@@ -81,18 +81,23 @@ def prompt_choose_tmd_file(cdn_folder, options):
         if sel:
             selected_value = options[sel[0]]
             root.destroy()
-
-
-            backup_tmd_file("c", cdn_folder, os.path.join(cdn_folder, selected_value))
-            rename_tmd_file(cdn_folder, selected_value)
-
         else:
             messagebox.showwarning("No Selection", "Please select a file before clicking 'Use Selected'.")
+    
+    def on_cancel():
+        nonlocal selected_value
+        selected_value = None
+        root.destroy()
+    
+    # Handle window close (X button)
+    root.protocol("WM_DELETE_WINDOW", on_cancel)
 
-    button = tk.Button(root, text="Use Selected", command=on_select)
-    button.pack(pady=(0, 10))
-
-
+    # Button frame
+    button_frame = tk.Frame(root)
+    button_frame.pack(pady=(0, 10))
+    
+    tk.Button(button_frame, text="Use Selected", command=on_select).pack(side="left", padx=(0, 5))
+    tk.Button(button_frame, text="Cancel", command=on_cancel).pack(side="left", padx=(5, 0))
 
     root.mainloop()
     return selected_value
@@ -112,23 +117,31 @@ def fallback_tmd_logic(cdn_folder):
                 print("[DEBUG] User cancelled selection or closed dialog.")
                 return "cancelled"
 
+        # Now handle the backup and rename operations after dialog returns
         src = os.path.join(cdn_folder, selected)
         print(f"[DEBUG] Selected file path: {src}")
         print(f"[DEBUG] Exists before rename? {os.path.exists(src)}")
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_path = os.path.join(cdn_folder, f"{selected}.bak_{timestamp}")
-        shutil.copy2(src, backup_path)
-
-        if os.path.exists(title_tmd_path):
-            os.remove(title_tmd_path)
-
+        # Backup the selected tmd file before renaming
+        backup_tmd_file("c", cdn_folder, src)
+        
+        # Use the rename_tmd_file function if available, otherwise do it manually
         try:
-            os.rename(src, title_tmd_path)
-            print(f"[DEBUG] Renamed {src} to {title_tmd_path}")
+            rename_tmd_file(cdn_folder, selected)
+            print(f"[DEBUG] Renamed {selected} to title.tmd using rename_tmd_file")
             return "replaced"
         except Exception as e:
-            print(f"[ERROR] Failed to rename {src} to {title_tmd_path}: {e}")
-            return "error"
-
-    
+            print(f"[ERROR] Failed to rename using rename_tmd_file: {e}")
+            # Fallback to manual rename
+            try:
+                if os.path.exists(title_tmd_path):
+                    os.remove(title_tmd_path)
+                os.rename(src, title_tmd_path)
+                print(f"[DEBUG] Manually renamed {src} to {title_tmd_path}")
+                return "replaced"
+            except Exception as e2:
+                print(f"[ERROR] Manual rename also failed: {e2}")
+                return "error"
+    else:
+        print("[DEBUG] No alternative tmd files found")
+        return "no_alternates"

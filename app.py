@@ -25,7 +25,7 @@ def cancel_and_exit(window):
     window.destroy()
     exit()
 
-def dorun():
+def dorun(main_window=None):
     selected_path = select_and_validate_folder()
     if not selected_path:
         return
@@ -41,6 +41,13 @@ def dorun():
     handle_tmd_logic(selected_path)
 
     print("Operation completed.")
+    
+    # Show completion message and close main window
+    messagebox.showinfo("Complete", "Operation completed successfully!")
+    
+    if main_window:
+        main_window.quit()
+        main_window.destroy()
 
 def main():
     window = tk.Tk()
@@ -57,7 +64,7 @@ def main():
     add_about_menu(window)
 
     tk.Label(window, text="Choose what to process:", font=("Segoe UI", 12)).pack(pady=(25, 25))
-    tk.Button(window, text="📁 Select Folder", width=25, command=dorun).pack(pady=12)
+    tk.Button(window, text="📁 Select Folder", width=25, command=lambda: dorun(window)).pack(pady=12)
  #   tk.Button(window, text="📦 Select Archive File", width=25, command=handle_file_selection).pack(pady=5)
 
     window.bind("<Escape>", lambda e: cancel_and_exit())
