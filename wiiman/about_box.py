@@ -1,12 +1,20 @@
 import tkinter as tk
 from tkinter import messagebox
 
+def _get_root_window():
+    """Get or create a single root window for dialogs."""
+    try:
+        root = tk._default_root
+        if root is None:
+            root = tk.Tk()
+            root.withdraw()
+        return root
+    except:
+        root = tk.Tk()
+        root.withdraw()
+        return root
+
 def show_about(window=None):
-    # If a window is provided, use it as the parent; else, create a temp root
-    if window is None:
-        temp_root = tk.Tk()
-        temp_root.withdraw()
-        messagebox.showinfo("About", "GFatha - Lead Dev", parent=temp_root)
-        temp_root.destroy()
-    else:
-        messagebox.showinfo("About", "GFatha - Lead Dev", parent=window)
+    """Show about dialog with proper resource management."""
+    parent = window if window is not None else _get_root_window()
+    messagebox.showinfo("About", "GFatha - Lead Dev", parent=parent)

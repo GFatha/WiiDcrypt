@@ -10,18 +10,27 @@ from wiiman.rename import rename_extensionless_files
 # This allows us to check if a file is an archive without hardcoding it everywhere          
 ARCHIVE_EXTENSIONS = ['.zip', '.rar', '.7z']
 
+def _get_root_window():
+    """Get or create a single root window for dialogs."""
+    try:
+        root = tk._default_root
+        if root is None:
+            root = tk.Tk()
+            root.withdraw()
+        return root
+    except:
+        root = tk.Tk()
+        root.withdraw()
+        return root
+
 def show_about(window=None):
-    # If a window is provided, use it as the parent; else, create a temp root
-    if window is None:
-        temp_root = tk.Tk()
-        temp_root.withdraw()
-        messagebox.showinfo("About", "Lead Dev - GFatha", parent=temp_root)
-        temp_root.destroy()
-    else:
-        messagebox.showinfo("About", "Lead Dev - GFatha", parent=window)
+    """Show about dialog with proper resource management."""
+    parent = window if window is not None else _get_root_window()
+    messagebox.showinfo("About", "Lead Dev - GFatha", parent=parent)
         
 def cancel_and_exit(window):
-    messagebox.showinfo("Cancelled", "Operation Cancelled.")
+    """Cancel operation and exit application with confirmation."""
+    messagebox.showinfo("Cancelled", "Operation Cancelled.", parent=window)
     window.destroy()
     exit()
 
@@ -43,7 +52,8 @@ def dorun(main_window=None):
     print("Operation completed.")
     
     # Show completion message and close main window
-    messagebox.showinfo("Complete", "Operation completed successfully!")
+    parent = main_window if main_window else _get_root_window()
+    messagebox.showinfo("Complete", "Operation completed successfully!", parent=parent)
     
     if main_window:
         main_window.quit()
@@ -67,8 +77,8 @@ def main():
     tk.Button(window, text="📁 Select Folder", width=25, command=lambda: dorun(window)).pack(pady=12)
  #   tk.Button(window, text="📦 Select Archive File", width=25, command=handle_file_selection).pack(pady=5)
 
-    window.bind("<Escape>", lambda e: cancel_and_exit())
-    window.bind("<Control-q>", lambda e: cancel_and_exit())
+    window.bind("<Escape>", lambda e: cancel_and_exit(window))
+    window.bind("<Control-q>", lambda e: cancel_and_exit(window))
     window.mainloop()
     
 # 🔧 Testable entry point
