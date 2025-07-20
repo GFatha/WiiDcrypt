@@ -4,7 +4,7 @@ import shutil
 import pytest
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from wiiman.folder_validator import is_valid_cdn_file
+from wiiman.validator import is_valid_cdn_file
 
 def create_file(path, content=b''):
     with open(path, 'wb') as f:

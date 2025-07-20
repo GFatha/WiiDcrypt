@@ -22,3 +22,16 @@ def rename_extensionless_files(folder_path, new_extension='.app'):
                 except ValueError:
                     continue
     return
+
+def rename_tmd_file(cdn_folder, file_path):
+    """
+    Renames tmd.X to title.tmd
+    """
+    folder_path = cdn_folder + "/" + file_path
+    if os.path.isfile(folder_path):
+        try:
+            new_name = "title.tmd"
+            new_path = os.path.join(cdn_folder, new_name)
+            os.rename(folder_path, new_path)
+        except ValueError:
+            return
