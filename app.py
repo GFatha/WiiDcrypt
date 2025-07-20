@@ -4,37 +4,26 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from wiiman.validator import select_and_validate_folder
 from wiiman.rename import rename_extensionless_files
-
-
-# Define the archive extensions globally for easy access
-# This allows us to check if a file is an archive without hardcoding it everywhere          
-ARCHIVE_EXTENSIONS = ['.zip', '.rar', '.7z']
-
-def _get_root_window():
-    """Get or create a single root window for dialogs."""
-    try:
-        root = tk._default_root
-        if root is None:
-            root = tk.Tk()
-            root.withdraw()
-        return root
-    except:
-        root = tk.Tk()
-        root.withdraw()
-        return root
-
-def show_about(window=None):
-    """Show about dialog with proper resource management."""
-    parent = window if window is not None else _get_root_window()
-    messagebox.showinfo("About", "Lead Dev - GFatha", parent=parent)
+from wiiman.ui_utils import show_about, show_info, center_window, get_root_window
+from wiiman.config import (
+    DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
+    APP_TITLE, BUTTON_WIDTH, DEFAULT_FONT,
+    PADDING_LARGE, PADDING_MEDIUM,
+    MESSAGES
+)
         
 def cancel_and_exit(window):
     """Cancel operation and exit application with confirmation."""
-    messagebox.showinfo("Cancelled", "Operation Cancelled.", parent=window)
+    show_info("Cancelled", MESSAGES['operation_cancelled'], parent=window)
     window.destroy()
     exit()
 
 def dorun(main_window=None):
+    """Run the main decryption process.
+    
+    Args:
+        main_window (tk.Tk, optional): Main window to close after completion
+    """
     selected_path = select_and_validate_folder()
     if not selected_path:
         return
@@ -52,30 +41,27 @@ def dorun(main_window=None):
     print("Operation completed.")
     
     # Show completion message and close main window
-    parent = main_window if main_window else _get_root_window()
-    messagebox.showinfo("Complete", "Operation completed successfully!", parent=parent)
+    parent = main_window if main_window else get_root_window()
+    show_info("Complete", MESSAGES['operation_completed'], parent=parent)
     
     if main_window:
         main_window.quit()
         main_window.destroy()
 
 def main():
+    """Main application entry point."""
     window = tk.Tk()
-    window.title(" --  WiiU CDN Decryptor  --")
-    window_width = 400
-    window_height = 200
-    screen_width = window.winfo_screenwidth()
-    screen_height = window.winfo_screenheight()
-    x = int((screen_width / 2) - (window_width / 2))
-    y = int((screen_height / 2) - (window_height / 2))
-    window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+    window.title(APP_TITLE)
+    
+    # Center the window using the utility function
+    center_window(window, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
 
     from wiiman.about_menu import add_about_menu
     add_about_menu(window)
 
-    tk.Label(window, text="Choose what to process:", font=("Segoe UI", 12)).pack(pady=(25, 25))
-    tk.Button(window, text="📁 Select Folder", width=25, command=lambda: dorun(window)).pack(pady=12)
- #   tk.Button(window, text="📦 Select Archive File", width=25, command=handle_file_selection).pack(pady=5)
+    tk.Label(window, text="Choose what to process:", font=DEFAULT_FONT).pack(pady=(PADDING_LARGE, PADDING_LARGE))
+    tk.Button(window, text="📁 Select Folder", width=BUTTON_WIDTH, command=lambda: dorun(window)).pack(pady=PADDING_MEDIUM)
+ #   tk.Button(window, text="📦 Select Archive File", width=BUTTON_WIDTH, command=handle_file_selection).pack(pady=PADDING_SMALL)
 
     window.bind("<Escape>", lambda e: cancel_and_exit(window))
     window.bind("<Control-q>", lambda e: cancel_and_exit(window))

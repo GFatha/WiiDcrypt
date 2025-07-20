@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 from wiiman.rename import rename_tmd_file
+from .ui_utils import get_root_window, ask_yes_no, show_warning, center_window
 
 def handle_tmd_logic(selected_path):
     tmd_result = check_for_title_tmd(selected_path)
@@ -14,29 +15,14 @@ def handle_tmd_logic(selected_path):
         print("fallback_tmd_logic result:", fb_result)
     return
 
-def _get_root_window():
-    """Get or create a single root window for dialogs."""
-    try:
-        root = tk._default_root
-        if root is None:
-            root = tk.Tk()
-            root.withdraw()
-        return root
-    except:
-        root = tk.Tk()
-        root.withdraw()
-        return root
-
 def check_for_title_tmd(cdn_folder):
     """Check for existing title.tmd with proper resource management."""
     tmd_path = os.path.join(cdn_folder, "title.tmd")
 
     if os.path.exists(tmd_path):
-        root = _get_root_window()
-        response = messagebox.askyesno(
+        response = ask_yes_no(
             "Use title.tmd?",
-            "A title.tmd file was found.\nWould you like to use it?",
-            parent=root
+            "A title.tmd file was found.\nWould you like to use it?"
         )
 
         if response:
@@ -65,16 +51,22 @@ def get_tmd_alternates(cdn_folder):
     return [f for f in os.listdir(cdn_folder) if re.fullmatch(r'tmd\.\d+', f)]
 
 def prompt_choose_tmd_file(cdn_folder, options):
+    """Display a dialog to choose from multiple TMD files.
+    
+    Args:
+        cdn_folder (str): Path to the CDN folder
+        options (list): List of TMD file options
+        
+    Returns:
+        str: Selected TMD file name or None if cancelled
+    """
     selected_value = None
 
     root = tk.Tk()
     root.title("Select tmd.X file")
-    width, height = 350, 250
-    sw = root.winfo_screenwidth()
-    sh = root.winfo_screenheight()
-    x = (sw // 2) - (width // 2)
-    y = (sh // 2) - (height // 2)
-    root.geometry(f"{width}x{height}+{x}+{y}")
+    
+    # Use centralized window centering
+    center_window(root, 350, 250)
 
     tk.Label(root, text="Select which tmd.X file to use as title.tmd:").pack(pady=10)
 

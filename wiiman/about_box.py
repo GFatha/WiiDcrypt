@@ -1,20 +1,9 @@
-import tkinter as tk
-from tkinter import messagebox
+"""About dialog module - DEPRECATED.
 
-def _get_root_window():
-    """Get or create a single root window for dialogs."""
-    try:
-        root = tk._default_root
-        if root is None:
-            root = tk.Tk()
-            root.withdraw()
-        return root
-    except:
-        root = tk.Tk()
-        root.withdraw()
-        return root
+This module is deprecated and maintained only for backward compatibility.
+Use wiiman.ui_utils.show_about() instead.
+"""
+from .ui_utils import show_about  # Re-export for backward compatibility
 
-def show_about(window=None):
-    """Show about dialog with proper resource management."""
-    parent = window if window is not None else _get_root_window()
-    messagebox.showinfo("About", "GFatha - Lead Dev", parent=parent)
+# Keep this import for any legacy code that might import directly
+__all__ = ['show_about']
