@@ -1,31 +1,28 @@
+import logging
 import os
 import shutil
-import logging
 import tkinter as tk
-from wiiman.validator import select_and_validate_folder
+
+from wiiman.about_menu import add_about_menu
+from wiiman.config import MESSAGES
+from wiiman.decrypt_utils import generate_fake_tik
+from wiiman.match_title_id import match_title_id_exact
 from wiiman.rename import rename_extensionless_files
 from wiiman.tmd_handler import handle_tmd_logic
 from wiiman.tmd_parser import read_tmd_title_id
-from wiiman.match_title_id import match_title_id_exact
-from wiiman.about_menu import add_about_menu
-from wiiman.decrypt_utils import generate_fake_tik
-from wiiman.ui_utils import show_info, show_warning, show_error
-from wiiman.config import (
-    DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
-    APP_TITLE, BUTTON_WIDTH, DEFAULT_FONT,
-    PADDING_LARGE, PADDING_MEDIUM,
-    MESSAGES
-)
+from wiiman.ui_utils import show_error, show_info, show_warning
+from wiiman.validator import select_and_validate_folder
 
 # 📋 Logging setup
 logging.basicConfig(level=logging.DEBUG)
+
 
 def dorun(window=None):
     selected_path = select_and_validate_folder()
     if not selected_path:
         return
 
-    logging.info(MESSAGES['selected_folder'].format(selected_path=selected_path))
+    logging.info(MESSAGES["selected_folder"].format(selected_path=selected_path))
 
     # Step 1: Rename extensionless files
     rename_extensionless_files(selected_path)
@@ -38,7 +35,7 @@ def dorun(window=None):
 
     try:
         title_id = read_tmd_title_id(tmd_path)
-        logging.info(MESSAGES['extracted_title_id'].format(title_id=title_id))
+        logging.info(MESSAGES["extracted_title_id"].format(title_id=title_id))
 
         wiiman_dir = os.path.abspath(os.path.dirname(__file__))  # safer root
         csv_path = os.path.join(wiiman_dir, "wiiman", "wiiu_titlekeys.csv")
@@ -47,8 +44,12 @@ def dorun(window=None):
         if matched:
             show_info(
                 "🎯 Match Found",
-                MESSAGES['game_info'].format(matched_name=matched['Name'], matched_title_id=matched['Title ID'], matched_title_key=matched['Title Key']),
-                parent=window
+                MESSAGES["game_info"].format(
+                    matched_name=matched["Name"],
+                    matched_title_id=matched["Title ID"],
+                    matched_title_key=matched["Title Key"],
+                ),
+                parent=window,
             )
             logging.info(f"🎮 Game Name: {matched['Name']}")
             logging.info(f"🆔 Title ID: {matched['Title ID']}")
@@ -62,16 +63,20 @@ def dorun(window=None):
                 title_id=matched["Title ID"],
                 title_key=matched["Title Key"],
                 output_path=selected_path,
-                ui=SimpleUI()
+                ui=SimpleUI(),
             )
         else:
-            show_warning("Match Failed", MESSAGES['match_failed'].format(title_id=title_id), parent=window)
+            show_warning(
+                "Match Failed",
+                MESSAGES["match_failed"].format(title_id=title_id),
+                parent=window,
+            )
             return
 
     except Exception as e:
         show_error("TMD Parsing Error", str(e), parent=window)
         return
-    
+
     from wiiman.decrypt_utils import run_cdecrypt
 
     # 🔓 Decrypt into a sibling folder named after the game
@@ -95,10 +100,11 @@ def dorun(window=None):
     shutil.copy2(src, dst)
 
     # Final message
-    show_info("Complete", MESSAGES.get('operation_completed', "Operation completed successfully!"), parent=window)
+    show_info("Complete", MESSAGES["operation_completed"], parent=window)
     if window:
         window.quit()
         window.destroy()
+
 
 def main():
     window = tk.Tk()
@@ -107,9 +113,14 @@ def main():
 
     add_about_menu(window)  # ✅ Adds Help > About to menu bar
 
-    tk.Label(window, text="Select folder to process:", font=("Segoe UI", 12)).pack(pady=20)
-    tk.Button(window, text="📁 Select Folder", width=25, command=lambda: dorun(window)).pack(pady=10)
+    tk.Label(window, text="Select folder to process:", font=("Segoe UI", 12)).pack(
+        pady=20
+    )
+    tk.Button(
+        window, text="📁 Select Folder", width=25, command=lambda: dorun(window)
+    ).pack(pady=10)
     window.mainloop()
+
 
 if __name__ == "__main__":
     main()
