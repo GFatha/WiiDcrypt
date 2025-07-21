@@ -79,6 +79,18 @@ def show_warning(title, message, parent=None):
         parent = get_root_window()
     messagebox.showwarning(title, message, parent=parent)
 
+def show_error(title, message, parent=None):
+    """Show error message with proper parent management.
+
+    Args:
+        title (str): Dialog title
+        message (str): Dialog message
+        parent (tk.Widget, optional): Parent window for the dialog
+    """
+    if parent is None:
+        parent = get_root_window()
+    messagebox.showerror(title, message, parent=parent)
+
 
 def ask_yes_no(title, message, parent=None):
     """Ask yes/no question with proper parent management.

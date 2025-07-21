@@ -25,7 +25,7 @@ def dorun(window=None):
     if not selected_path:
         return
 
-logging.info(MESSAGES['selected_folder'].format(selected_path=selected_path))
+    logging.info(MESSAGES['selected_folder'].format(selected_path=selected_path))
 
     # Step 1: Rename extensionless files
     rename_extensionless_files(selected_path)
@@ -38,7 +38,7 @@ logging.info(MESSAGES['selected_folder'].format(selected_path=selected_path))
 
     try:
         title_id = read_tmd_title_id(tmd_path)
-logging.info(MESSAGES['extracted_title_id'].format(title_id=title_id))
+        logging.info(MESSAGES['extracted_title_id'].format(title_id=title_id))
 
         wiiman_dir = os.path.abspath(os.path.dirname(__file__))  # safer root
         csv_path = os.path.join(wiiman_dir, "wiiman", "wiiu_titlekeys.csv")
@@ -47,7 +47,7 @@ logging.info(MESSAGES['extracted_title_id'].format(title_id=title_id))
         if matched:
             show_info(
                 "🎯 Match Found",
-MESSAGES['game_info'].format(matched_name=matched['Name'], matched_title_id=matched['Title ID'], matched_title_key=matched['Title Key'])
+                MESSAGES['game_info'].format(matched_name=matched['Name'], matched_title_id=matched['Title ID'], matched_title_key=matched['Title Key']),
                 parent=window
             )
             logging.info(f"🎮 Game Name: {matched['Name']}")
@@ -65,7 +65,7 @@ MESSAGES['game_info'].format(matched_name=matched['Name'], matched_title_id=matc
                 ui=SimpleUI()
             )
         else:
-show_warning("Match Failed", MESSAGES['match_failed'].format(title_id=title_id), parent=window)
+            show_warning("Match Failed", MESSAGES['match_failed'].format(title_id=title_id), parent=window)
             return
 
     except Exception as e:
