@@ -4,9 +4,9 @@ import shutil
 import tkinter as tk
 from datetime import datetime
 
-from wiiman.config import DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MESSAGES
+from wiiman.config import DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MESSAGES, PADDING_MEDIUM, PADDING_NONE, PADDING_SMALL
 from wiiman.rename import rename_tmd_file
-from wiiman.ui_utils import ask_yes_no, show_warning
+from wiiman.ui_utils import get_root_window, ask_yes_no, show_warning, center_window
 
 
 def handle_tmd_logic(selected_path):
@@ -60,7 +60,7 @@ def prompt_choose_tmd_file(cdn_folder, options):
     root.title("Select tmd.X file")
     center_window(root, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
 
-    tk.Label(root, text="Select which tmd.X file to use as title.tmd:").pack(pady=10)
+    tk.Label(root, text="Select which tmd.X file to use as title.tmd:").pack(pady=PADDING_MEDIUM)
 
     frame = tk.Frame(root)
     frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
@@ -93,13 +93,13 @@ def prompt_choose_tmd_file(cdn_folder, options):
 
     # Button frame
     button_frame = tk.Frame(root)
-    button_frame.pack(pady=(0, 10))
+    button_frame.pack(pady=(PADDING_NONE, PADDING_MEDIUM))
 
     tk.Button(button_frame, text="Use Selected", command=on_select).pack(
-        side="left", padx=(0, 5)
+        side="left", padx=(PADDING_NONE, PADDING_SMALL)
     )
     tk.Button(button_frame, text="Cancel", command=on_cancel).pack(
-        side="left", padx=(5, 0)
+        side="left", padx=(PADDING_SMALL, PADDING_NONE)
     )
 
     root.mainloop()
@@ -108,7 +108,6 @@ def prompt_choose_tmd_file(cdn_folder, options):
 
 def fallback_tmd_logic(cdn_folder):
     title_tmd_path = os.path.join(cdn_folder, "title.tmd")
-    has_title = os.path.exists(title_tmd_path)
     alternates = get_tmd_alternates(cdn_folder)
 
     if alternates:

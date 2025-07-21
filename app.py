@@ -4,13 +4,16 @@ import shutil
 import tkinter as tk
 
 from wiiman.about_menu import add_about_menu
-from wiiman.config import MESSAGES
+from wiiman.config import (
+    APP_TITLE, BUTTON_WIDTH, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
+    DEFAULT_FONT, MESSAGES, PADDING_LARGE, PADDING_MEDIUM, MESSAGES
+)
 from wiiman.decrypt_utils import generate_fake_tik
 from wiiman.match_title_id import match_title_id_exact
 from wiiman.rename import rename_extensionless_files
 from wiiman.tmd_handler import handle_tmd_logic
 from wiiman.tmd_parser import read_tmd_title_id
-from wiiman.ui_utils import show_error, show_info, show_warning
+from wiiman.ui_utils import show_error, show_info, show_warning, center_window, get_root_window
 from wiiman.validator import select_and_validate_folder
 
 # 📋 Logging setup
@@ -108,17 +111,17 @@ def dorun(window=None):
 
 def main():
     window = tk.Tk()
-    window.title("🧩 WiiU CDN Processor")
-    window.geometry("400x180")
+    window.title(APP_TITLE)
+    center_window(window, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
 
     add_about_menu(window)  # ✅ Adds Help > About to menu bar
 
-    tk.Label(window, text="Select folder to process:", font=("Segoe UI", 12)).pack(
-        pady=20
+    tk.Label(window, text="Select folder to process:", font=(DEFAULT_FONT)).pack(
+        pady=(PADDING_LARGE, PADDING_LARGE)
     )
     tk.Button(
-        window, text="📁 Select Folder", width=25, command=lambda: dorun(window)
-    ).pack(pady=10)
+        window, text="📁 Select Folder", width=BUTTON_WIDTH, command=lambda: dorun(window)
+    ).pack(pady=PADDING_MEDIUM)
     window.mainloop()
 
 

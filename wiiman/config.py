@@ -29,13 +29,14 @@ BUTTON_WIDTH = 25
 PADDING_SMALL = 5
 PADDING_MEDIUM = 12
 PADDING_LARGE = 25
+PADDING_NONE = 0
 
 # File patterns
 HEX_FILENAME_LENGTH = 8
 TMD_ALTERNATE_PATTERN = r"tmd\.\d+"
 
 # Application metadata
-APP_TITLE = " --  WiiU CDN Decryptor  --"
+APP_TITLE = "🧩 WiiU CDN Processor"
 ABOUT_TEXT = "Lead Dev - GFatha"
 
 # Messages
