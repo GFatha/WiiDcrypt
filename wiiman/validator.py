@@ -4,6 +4,20 @@ from tkinter import filedialog, messagebox
 
 MAX_ATTEMPTS = 3
 
+def _get_root_window():
+    """Get or create a single root window for dialogs."""
+    # Check if there's already a root window
+    try:
+        root = tk._default_root
+        if root is None:
+            root = tk.Tk()
+            root.withdraw()  # Hide the root window
+        return root
+    except:
+        root = tk.Tk()
+        root.withdraw()
+        return root
+
 def is_valid_cdn_file(filename, parent_folder):
     filepath = os.path.join(parent_folder, filename)
     ext = os.path.splitext(filename)[1].lower()
@@ -39,18 +53,26 @@ def is_valid_cdn_folder(folder_path):
     return False
 
 def select_and_validate_folder():
+    """Select and validate a CDN folder with proper resource management."""
+    root = _get_root_window()
     attempt_count = 0
+    
     while attempt_count < MAX_ATTEMPTS:
-        root = tk.Tk()
-        root.withdraw()
         selected = filedialog.askdirectory(
             title="Select Wii U CDN Folder",
-            initialdir=os.getcwd()
+            initialdir=os.getcwd(),
+            parent=root
         )
         print(f"Selected folder: {selected}")
+        
         if not selected:
-            messagebox.showinfo("Cancelled", "Operation cancelled — no folder was selected.")
+            messagebox.showinfo(
+                "Cancelled", 
+                "Operation cancelled — no folder was selected.",
+                parent=root
+            )
             return None
+            
         if is_valid_cdn_folder(selected):
             return selected
         else:
@@ -59,14 +81,20 @@ def select_and_validate_folder():
                 retry = messagebox.askquestion(
                     "Invalid Folder ❌",
                     "This folder is empty or contains unsupported files.\nWould you like to try again?",
-                    icon="warning"
+                    icon="warning",
+                    parent=root
                 )
                 if retry != 'yes':
-                    messagebox.showinfo("Cancelled", "Operation cancelled — no valid folder was selected.")
+                    messagebox.showinfo(
+                        "Cancelled", 
+                        "Operation cancelled — no valid folder was selected.",
+                        parent=root
+                    )
                     return None
             else:
                 messagebox.showinfo(
                     "Too Many Attempts 🚫",
-                    "It appears you're having trouble selecting a valid folder.\nPlease try again later."
+                    "It appears you're having trouble selecting a valid folder.\nPlease try again later.",
+                    parent=root
                 )
                 return None

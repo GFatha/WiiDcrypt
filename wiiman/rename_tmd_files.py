@@ -14,15 +14,30 @@ def handle_tmd_logic(selected_path):
         print("fallback_tmd_logic result:", fb_result)
     return
 
+def _get_root_window():
+    """Get or create a single root window for dialogs."""
+    try:
+        root = tk._default_root
+        if root is None:
+            root = tk.Tk()
+            root.withdraw()
+        return root
+    except:
+        root = tk.Tk()
+        root.withdraw()
+        return root
+
 def check_for_title_tmd(cdn_folder):
+    """Check for existing title.tmd with proper resource management."""
     tmd_path = os.path.join(cdn_folder, "title.tmd")
 
     if os.path.exists(tmd_path):
-        root = tk.Tk()
-        root.withdraw()
-        response = messagebox.askyesno("Use title.tmd?",
-            "A title.tmd file was found.\nWould you like to use it?")
-        root.destroy()
+        root = _get_root_window()
+        response = messagebox.askyesno(
+            "Use title.tmd?",
+            "A title.tmd file was found.\nWould you like to use it?",
+            parent=root
+        )
 
         if response:
             return
@@ -82,7 +97,7 @@ def prompt_choose_tmd_file(cdn_folder, options):
             selected_value = options[sel[0]]
             root.destroy()
         else:
-            messagebox.showwarning("No Selection", "Please select a file before clicking 'Use Selected'.")
+            messagebox.showwarning("No Selection", "Please select a file before clicking 'Use Selected'.", parent=root)
     
     def on_cancel():
         nonlocal selected_value
