@@ -5,6 +5,7 @@ from tkinter import filedialog, messagebox
 from wiiman.validator import select_and_validate_folder
 from wiiman.rename import rename_extensionless_files
 from wiiman.ui_utils import show_about, show_info, center_window, get_root_window
+from wiiman.logger import log_info, log_error, log_exception, log_operation, log_debug
 from wiiman.config import (
     DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
     APP_TITLE, BUTTON_WIDTH, DEFAULT_FONT,
@@ -16,20 +17,25 @@ def cancel_and_exit(window):
     """Cancel operation and exit application with user confirmation."""
     from wiiman.ui_utils import ask_yes_no
     
+    log_debug("User initiated exit sequence")
+    
     # Ask for confirmation before exiting
     if ask_yes_no(
         "Confirm Exit", 
         "Are you sure you want to exit WiiU CDN Decryptor?", 
         parent=window
     ):
+        log_info("User confirmed application exit")
         window.destroy()
         # Use sys.exit instead of exit() for cleaner shutdown
         import sys
         sys.exit(0)
+    else:
+        log_debug("User cancelled exit sequence")
     # If user says no, do nothing and return to application
 
 def dorun(main_window=None):
-    """Run the main decryption process with progress feedback.
+    """Run the main decryption process with progress feedback and comprehensive logging.
     
     Args:
         main_window (tk.Tk, optional): Main window to close after completion
@@ -37,9 +43,14 @@ def dorun(main_window=None):
     from wiiman.progress_dialog import ProgressDialog
     from wiiman.rename_tmd_files import handle_tmd_logic
     
+    log_operation("Process CDN Files", details="User initiated CDN processing")
+    
     selected_path = select_and_validate_folder()
     if not selected_path:
+        log_info("User cancelled folder selection")
         return
+    
+    log_operation("Folder Selected", path=selected_path, details=f"Processing {os.path.basename(selected_path)}")
     
     # Create progress dialog
     progress = ProgressDialog(
@@ -49,15 +60,21 @@ def dorun(main_window=None):
         height=PROGRESS_DIALOG_HEIGHT
     )
     
+    operation_start_time = __import__('time').time()
+    
     try:
         # Step 1: Rename extensionless files
+        log_info("Starting step 1: Rename extensionless files")
         progress.set_status("Renaming extensionless files...")
         progress.set_details(f"Processing folder: {os.path.basename(selected_path)}")
         progress.set_progress(25)
         
+        step_start = __import__('time').time()
         rename_extensionless_files(selected_path)
+        log_info(f"Step 1 completed in {__import__('time').time() - step_start:.2f}s")
         
         # Step 2: Copy template file
+        log_info("Starting step 2: Copy certificate template")
         progress.set_status("Copying certificate template...")
         progress.set_details("Adding title.cert file")
         progress.set_progress(50)
@@ -67,34 +84,43 @@ def dorun(main_window=None):
         
         if os.path.exists(src):
             shutil.copy2(src, dst)
+            log_info(f"Template copied: {src} -> {dst}")
         else:
-            # Template file missing - show warning but continue
+            log_error(f"Template file not found: {src}")
             progress.set_details("Warning: title.cert template not found")
         
         # Step 3: Handle TMD logic
+        log_info("Starting step 3: Process TMD files")
         progress.set_status("Processing TMD files...")
         progress.set_details("Checking and processing title.tmd files")
         progress.set_progress(75)
         
+        step_start = __import__('time').time()
         handle_tmd_logic(selected_path)
+        log_info(f"Step 3 completed in {__import__('time').time() - step_start:.2f}s")
         
         # Step 4: Complete
         progress.set_status("Operation completed successfully!")
         progress.set_details("All files processed")
         progress.set_progress(100)
         
+        total_time = __import__('time').time() - operation_start_time
+        log_operation("Processing Complete", path=selected_path, details=f"Total time: {total_time:.2f}s")
+        
         # Brief delay to show completion
         import time
         time.sleep(0.5)
         
     except Exception as e:
+        log_exception(f"Error during CDN processing: {str(e)}")
         progress.set_status("Error occurred")
         progress.set_details(str(e))
         show_info("Error", f"An error occurred during processing:\n{str(e)}", parent=main_window)
+        return  # Exit early on error
     finally:
         progress.close()
     
-    print("Operation completed.")
+    log_info("CDN processing completed successfully")
     
     # Show completion message
     parent = main_window if main_window else get_root_window()
@@ -103,13 +129,17 @@ def dorun(main_window=None):
     if main_window:
         # Ask if user wants to process another folder
         from wiiman.ui_utils import ask_yes_no
+        log_debug("Asking user about processing another folder")
         if not ask_yes_no(
             "Process Another?", 
             "Would you like to process another folder?", 
             parent=main_window
         ):
+            log_info("User chose to exit application after completion")
             main_window.quit()
             main_window.destroy()
+        else:
+            log_info("User chose to process another folder")
 
 def create_tooltip(widget, text):
     """Create a tooltip for a widget.
