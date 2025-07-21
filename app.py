@@ -2,7 +2,6 @@ import os
 import shutil
 import logging
 import tkinter as tk
-from tkinter import messagebox
 from wiiman.validator import select_and_validate_folder
 from wiiman.rename import rename_extensionless_files
 from wiiman.tmd_handler import handle_tmd_logic
@@ -10,6 +9,13 @@ from wiiman.tmd_parser import read_tmd_title_id
 from wiiman.match_title_id import match_title_id_exact
 from wiiman.about_menu import add_about_menu
 from wiiman.decrypt_utils import generate_fake_tik
+from wiiman.ui_utils import show_info, show_warning, show_error
+from wiiman.config import (
+    DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
+    APP_TITLE, BUTTON_WIDTH, DEFAULT_FONT,
+    PADDING_LARGE, PADDING_MEDIUM,
+    MESSAGES
+)
 
 # 📋 Logging setup
 logging.basicConfig(level=logging.DEBUG)
@@ -19,7 +25,7 @@ def dorun(window=None):
     if not selected_path:
         return
 
-    logging.info(f"Selected folder: {selected_path}")
+logging.info(MESSAGES['selected_folder'].format(selected_path=selected_path))
 
     # Step 1: Rename extensionless files
     rename_extensionless_files(selected_path)
@@ -32,16 +38,17 @@ def dorun(window=None):
 
     try:
         title_id = read_tmd_title_id(tmd_path)
-        logging.info(f"📦 Extracted Title ID: {title_id}")
+logging.info(MESSAGES['extracted_title_id'].format(title_id=title_id))
 
         wiiman_dir = os.path.abspath(os.path.dirname(__file__))  # safer root
         csv_path = os.path.join(wiiman_dir, "wiiman", "wiiu_titlekeys.csv")
 
         matched = match_title_id_exact(title_id, csv_path)
         if matched:
-            messagebox.showinfo(
+            show_info(
                 "🎯 Match Found",
-                f"Game Name: {matched['Name']}\nTitle ID: {matched['Title ID']}\nTitle Key: {matched['Title Key']}"
+MESSAGES['game_info'].format(matched_name=matched['Name'], matched_title_id=matched['Title ID'], matched_title_key=matched['Title Key'])
+                parent=window
             )
             logging.info(f"🎮 Game Name: {matched['Name']}")
             logging.info(f"🆔 Title ID: {matched['Title ID']}")
@@ -58,11 +65,11 @@ def dorun(window=None):
                 ui=SimpleUI()
             )
         else:
-            messagebox.showwarning("Match Failed", f"No match found for Title ID: {title_id}")
+show_warning("Match Failed", MESSAGES['match_failed'].format(title_id=title_id), parent=window)
             return
 
     except Exception as e:
-        messagebox.showerror("TMD Parsing Error", str(e))
+        show_error("TMD Parsing Error", str(e), parent=window)
         return
     
     from wiiman.decrypt_utils import run_cdecrypt
@@ -88,7 +95,7 @@ def dorun(window=None):
     shutil.copy2(src, dst)
 
     # Final message
-    messagebox.showinfo("Complete", "Operation completed successfully!")
+    show_info("Complete", MESSAGES.get('operation_completed', "Operation completed successfully!"), parent=window)
     if window:
         window.quit()
         window.destroy()

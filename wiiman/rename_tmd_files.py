@@ -2,9 +2,12 @@ import os
 import re
 import shutil
 import tkinter as tk
-from tkinter import messagebox
 from datetime import datetime
+
+from wiiman.config import DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MESSAGES
 from wiiman.rename import rename_tmd_file
+from wiiman.ui_utils import ask_yes_no, show_warning
+
 
 def handle_tmd_logic(selected_path):
     tmd_result = check_for_title_tmd(selected_path)
@@ -14,38 +17,22 @@ def handle_tmd_logic(selected_path):
         print("fallback_tmd_logic result:", fb_result)
     return
 
-def _get_root_window():
-    """Get or create a single root window for dialogs."""
-    try:
-        root = tk._default_root
-        if root is None:
-            root = tk.Tk()
-            root.withdraw()
-        return root
-    except:
-        root = tk.Tk()
-        root.withdraw()
-        return root
 
 def check_for_title_tmd(cdn_folder):
     """Check for existing title.tmd with proper resource management."""
     tmd_path = os.path.join(cdn_folder, "title.tmd")
 
     if os.path.exists(tmd_path):
-        root = _get_root_window()
-        response = messagebox.askyesno(
-            "Use title.tmd?",
-            "A title.tmd file was found.\nWould you like to use it?",
-            parent=root
-        )
+        response = ask_yes_no("Use title.tmd?", MESSAGES["use_title_tmd"], parent=root)
 
         if response:
-            return
-        else:
-            backup_tmd_file("r", cdn_folder, tmd_path)
-            return "skip"
-    else:
-        return "not_found"
+            return "valid"
+
+        backup_tmd_file("r", cdn_folder, tmd_path)
+        return "skip"
+
+    return "not_found"
+
 
 def backup_tmd_file(type, cdn_folder, tmd_path):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -61,20 +48,17 @@ def backup_tmd_file(type, cdn_folder, tmd_path):
 
     return backup_path
 
+
 def get_tmd_alternates(cdn_folder):
-    return [f for f in os.listdir(cdn_folder) if re.fullmatch(r'tmd\.\d+', f)]
+    return [f for f in os.listdir(cdn_folder) if re.fullmatch(r"tmd\.\d+", f)]
+
 
 def prompt_choose_tmd_file(cdn_folder, options):
     selected_value = None
 
     root = tk.Tk()
     root.title("Select tmd.X file")
-    width, height = 350, 250
-    sw = root.winfo_screenwidth()
-    sh = root.winfo_screenheight()
-    x = (sw // 2) - (width // 2)
-    y = (sh // 2) - (height // 2)
-    root.geometry(f"{width}x{height}+{x}+{y}")
+    center_window(root, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
 
     tk.Label(root, text="Select which tmd.X file to use as title.tmd:").pack(pady=10)
 
@@ -97,25 +81,30 @@ def prompt_choose_tmd_file(cdn_folder, options):
             selected_value = options[sel[0]]
             root.destroy()
         else:
-            messagebox.showwarning("No Selection", "Please select a file before clicking 'Use Selected'.", parent=root)
-    
+            show_warning("No Selection", MESSAGES["no_selection_warning"], parent=root)
+
     def on_cancel():
         nonlocal selected_value
         selected_value = None
         root.destroy()
-    
+
     # Handle window close (X button)
     root.protocol("WM_DELETE_WINDOW", on_cancel)
 
     # Button frame
     button_frame = tk.Frame(root)
     button_frame.pack(pady=(0, 10))
-    
-    tk.Button(button_frame, text="Use Selected", command=on_select).pack(side="left", padx=(0, 5))
-    tk.Button(button_frame, text="Cancel", command=on_cancel).pack(side="left", padx=(5, 0))
+
+    tk.Button(button_frame, text="Use Selected", command=on_select).pack(
+        side="left", padx=(0, 5)
+    )
+    tk.Button(button_frame, text="Cancel", command=on_cancel).pack(
+        side="left", padx=(5, 0)
+    )
 
     root.mainloop()
     return selected_value
+
 
 def fallback_tmd_logic(cdn_folder):
     title_tmd_path = os.path.join(cdn_folder, "title.tmd")
@@ -139,7 +128,7 @@ def fallback_tmd_logic(cdn_folder):
 
         # Backup the selected tmd file before renaming
         backup_tmd_file("c", cdn_folder, src)
-        
+
         # Use the rename_tmd_file function if available, otherwise do it manually
         try:
             rename_tmd_file(cdn_folder, selected)
