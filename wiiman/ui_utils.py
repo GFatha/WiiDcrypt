@@ -36,8 +36,105 @@ def show_about(parent=None):
     """
     if parent is None:
         parent = get_root_window()
-    messagebox.showinfo("About", "Lead Dev - GFatha", parent=parent)
 
+    # Create custom about dialog
+    about_dialog = tk.Toplevel(parent)
+    about_dialog.title("About")
+    about_dialog.resizable(False, False)
+    about_dialog.configure(bg='#f8f9fa')
+    about_dialog.grab_set()  # Make modal
+
+    # Center the dialog
+    center_window(about_dialog, 400, 300)
+
+    # Main frame
+    main_frame = tk.Frame(about_dialog, bg='#f8f9fa')
+    main_frame.pack(fill='both', expand=True, padx=20, pady=20)
+
+    # Application title
+    title_label = tk.Label(
+        main_frame,
+        text="WiiU CDN Decryptor",
+        font=("Segoe UI", 16, "bold"),
+        bg='#f8f9fa',
+        fg='#2c3e50'
+    )
+    title_label.pack(pady=(0, 10))
+
+    # Version
+    version_label = tk.Label(
+        main_frame,
+        text="Version 2.0",
+        font=("Segoe UI", 12),
+        bg='#f8f9fa',
+        fg='#7f8c8d'
+    )
+    version_label.pack(pady=(0, 15))
+
+    # Description
+    desc_text = (
+        "Lead Dev - GFatha\n\n"
+        "A tool for processing WiiU CDN files to prepare them for decryption.\n\n"
+        "Features:\n"
+        "• Validates CDN folder structure\n"
+        "• Renames extensionless files to .app format\n"
+        "• Handles TMD file processing\n"
+        "• Copies required certificate templates\n"
+        "• Progress tracking and error handling"
+    )
+
+    desc_label = tk.Label(
+        main_frame,
+        text=desc_text,
+        font=("Segoe UI", 10),
+        bg='#f8f9fa',
+        fg='#34495e',
+        justify='left',
+        wraplength=350
+    )
+    desc_label.pack(pady=(0, 15))
+
+    # Developer info
+    dev_label = tk.Label(
+        main_frame,
+        text="Lead Developer: GFatha",
+        font=("Segoe UI", 10, "bold"),
+        bg='#f8f9fa',
+        fg='#2c3e50'
+    )
+    dev_label.pack(pady=(0, 5))
+
+    # Copyright
+    copyright_label = tk.Label(
+        main_frame,
+        text="© 2025 WiiDcrypt Project",
+        font=("Segoe UI", 9),
+        bg='#f8f9fa',
+        fg='#95a5a6'
+    )
+    copyright_label.pack(pady=(0, 20))
+
+    # Close button
+    close_button = tk.Button(
+        main_frame,
+        text="Close",
+        command=about_dialog.destroy,
+        font=("Segoe UI", 10),
+        bg='#3498db',
+        fg='white',
+        activebackground='#2980b9',
+        activeforeground='white',
+        width=10,
+        cursor='hand2'
+    )
+    close_button.pack()
+
+    # Keyboard shortcut
+    about_dialog.bind('<Return>', lambda e: about_dialog.destroy())
+    about_dialog.bind('<Escape>', lambda e: about_dialog.destroy())
+
+    # Focus the close button
+    close_button.focus_set()
 
 def center_window(window, width, height):
     """Center a window on the screen.
