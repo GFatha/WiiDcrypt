@@ -6,6 +6,7 @@ from tkinter import messagebox
 from datetime import datetime
 from wiiman.rename import rename_tmd_file
 import logging
+from wiiman.config import MESSAGES
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -32,7 +33,7 @@ def ask_user_use_title_tmd_gui():
     try:
         root = tk.Tk()
         root.withdraw()
-        response = messagebox.askyesno("Use title.tmd?", "A title.tmd file was found.\nWould you like to use it?")
+        response = messagebox.askyesno("Use title.tmd?", MESSAGES['use_title_tmd'])
         root.destroy()
         return response
     except tk.TclError as e:
